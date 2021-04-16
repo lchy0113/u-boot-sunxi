@@ -9,32 +9,55 @@ else
 fi
 RICHGOLD
 
-
-real_core=`cat /proc/cpuinfo | grep cores | wc -l`
-let best_num=$real_core+$(printf %.0f `echo "$real_core*0.2"|bc`)
-
-function clean_code()
-{
-	echo "---------------"
-	echo "| clean code. |"
-	echo "---------------"
-	make distclean
-}
-
-
 DEFCONFIG="Bananapi_M2_Ultra_defconfig"
 
 ARCH=arm 
 
+real_core=`cat /proc/cpuinfo | grep cores | wc -l`
+let best_num=$real_core+$(printf %.0f `echo "$real_core*0.2"|bc`)
 
-if [ "$1" = "clean" ]; then
-	clean_code
-	exit 0
-fi
+function func_clean()
+{
+	figlet -ct "clean code"
+	make clean
+	make distclean
+}
 
-if [ "$1" = "config" ]; then
-	make ${DEFCONFIG}
-	exit 0
-fi
+function func_config()
+{
+	figlet -ct "config"
+	make ARCH=${ARCH} ${DEFCONFIG}
+}
 
-make -j${best_num}
+function func_build()
+{
+	figlet -ct "build"
+	if [ ! -f .config ]; then
+		echo "....make ${DEFCONFIG}"
+		make ARCh=${ARCH} ${DEFCONFIG}
+	fi
+
+	make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} -j${best_num}
+
+}
+
+function func_help()
+{
+	figlet -ct "help"
+	echo "clean, build"
+}
+
+case $1 in
+	clean)
+		func_clean
+		exit 0
+		;;
+	build)
+		func_build
+		exit 0
+		;;
+	*)
+		func_help
+		;;
+esac
+
